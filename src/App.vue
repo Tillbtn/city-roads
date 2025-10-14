@@ -33,6 +33,35 @@
         <a href="#" class="custom-button" @click.prevent="scene.clear()">Karte leeren</a>
       </div>
 
+      <div id="layer-list-container" v-if="displayLayers.length > 0">
+        <h4>Ebenen</h4>
+        <ul>
+          <li v-for="layer in displayLayers" :key="layer.name" class="layer-list-item">
+            <div
+              class="layer-name"
+              @click="selectLayer(layer)"
+              :class="{ selected: selectedLayerName === layer.name }"
+            >
+              {{ layer.name }}
+            </div>
+            <div v-if="selectedLayerName === layer.name" class="layer-controls">
+              <div class="control-row">
+                <label for="x-offset">X-Offset:</label>
+                <input type="number" id="x-offset" v-model.number="xOffsetInput">
+              </div>
+              <div class="control-row">
+                <label for="y-offset">Y-Offset:</label>
+                <input type="number" id="y-offset" v-model.number="yOffsetInput">
+              </div>
+              <div class="control-buttons">
+                <a href="#" class="control-btn" @click.prevent="moveSelectedLayer">Verschieben</a>
+                <a href="#" class="control-btn reset" @click.prevent="resetSelectedLayerPosition">Zurücksetzen</a>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
       <div v-if="showSettings" class="print-window">
         <h3>Display</h3>
         </div>
@@ -107,10 +136,17 @@ export default {
       layers: [],
       bboxInput: '13.0633,52.3917,13.0716,52.3985',
       currentBboxArray: null,
-      cityNameInput: 'Potsdam'
+      cityNameInput: 'Potsdam',
+      // for layers
+      selectedLayerName: null,
+      xOffsetInput: 0,
+      yOffsetInput: 0
     };
   },
   computed: {
+    displayLayers() {
+      return this.layers;
+    },
     labelColorRGBA() {
       return toRGBA(this.labelColor);
     },
@@ -189,6 +225,45 @@ export default {
       gebaeudeEbene.id = 'Gebäude';
     },
 
+    selectLayer(layer) {
+      // Funktion zum Auswählen und Abwählen einer Ebene
+      if (this.selectedLayerName === layer.name) {
+        this.selectedLayerName = null; // Auswahl aufheben bei erneutem Klick
+      } else {
+        this.selectedLayerName = layer.name;
+        this.xOffsetInput = 0; // Eingabefelder bei neuer Auswahl zurücksetzen
+        this.yOffsetInput = 0;
+      }
+    },
+
+    moveSelectedLayer() {
+      if (!this.selectedLayerName) return;
+      const layerToMove = window.scene.queryLayer(this.selectedLayerName);
+      if (!layerToMove) {
+        console.error(`Ebene '${this.selectedLayerName}' nicht gefunden.`);
+        return;
+      }
+      console.log(`Verschiebe Ebene '${this.selectedLayerName}' um X:${this.xOffsetInput}, Y:${this.yOffsetInput}`);
+      layerToMove.moveBy(this.xOffsetInput, this.yOffsetInput);
+
+      // Eingabefelder nach der Aktion zurücksetzen
+      this.xOffsetInput = 0;
+      this.yOffsetInput = 0;
+    },
+
+    resetSelectedLayerPosition() {
+      if (!this.selectedLayerName) return;
+      const layerToReset = window.scene.queryLayer(this.selectedLayerName);
+      if (!layerToReset) {
+        console.error(`Ebene '${this.selectedLayerName}' nicht gefunden.`);
+        return;
+      }
+      console.log(`Setze Position von Ebene '${this.selectedLayerName}' zurück.`);
+      // Jede Ebene speichert ihre Gesamtverschiebung in .dx und .dy.
+      // Wir verschieben sie einfach um den negativen Betrag zurück.
+      layerToReset.moveBy(-layerToReset.dx, -layerToReset.dy);
+    },
+
     dispose() {
       if (this.scene) {
         this.scene.dispose();
@@ -247,6 +322,7 @@ export default {
         .toRgbString();
       getCanvas().style.visibility = "hidden";
       this.currentBboxArray = null;
+      this.selectedLayerName = null;
     },
 
     toPNGFile(e) {
@@ -458,6 +534,108 @@ function recordOpenClick(link) {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     width: auto;
+  }
+}
+
+#layer-list-container {
+  background: #f8f8f8;
+  width: desktop-controls-width;
+  padding: 8px 12px;
+  border-top: 1px solid border-color;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) inset;
+
+  h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+.layer-list-item {
+  border-bottom: 1px solid #eee;
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .layer-name {
+    font-size: 14px;
+    padding: 8px 4px;
+    color: #333;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #efefef;
+    }
+    &.selected {
+      background-color: highlight-color;
+      color: white;
+    }
+  }
+
+  .layer-controls {
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      label {
+        font-size: 12px;
+        width: 60px; // Sorgt für saubere Ausrichtung
+      }
+      input {
+        flex-grow: 1;
+        padding: 4px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+      }
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+
+      .control-btn {
+        flex-grow: 1;
+        padding: 6px;
+        text-align: center;
+        text-decoration: none;
+        background: #f0f0f0;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 12px;
+
+        &:hover {
+          background: #e0e0e0;
+          border-color: #bbb;
+        }
+        &.reset {
+          background: #fdf0f0;
+          border-color: #e9c0c0;
+          color: #c0392b;
+          &:hover {
+            background: #fbe0e0;
+          }
+        }
+      }
+    }
   }
 }
 
