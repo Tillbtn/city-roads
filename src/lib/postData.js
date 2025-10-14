@@ -3,8 +3,10 @@ import Progress from './Progress.js';
 
 let backends = [
   //'https://overpass.kumi.systems/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
   'https://overpass-api.de/api/interpreter',
-  'https://overpass.openstreetmap.ru/cgi/interpreter'
+  'https://overpass.openstreetmap.ru/cgi/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
 ];
 
 export default function postData(data, progress) {
