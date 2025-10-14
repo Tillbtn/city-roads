@@ -619,6 +619,145 @@ function recordOpenClick(link) {
   }
 }
 
+.col {
+    display: flex;
+    flex: 1;
+    select {
+      margin-left: 14px;
+    }
+  }
+.row {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: row;
+  min-height: 32px;
+}
+.colors {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  .color-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 64px;
+  }
+
+  .color-label {
+    font-size: 12px;
+  }
+}
+
+a {
+  border: 1px solid transparent;
+  margin: -1px;
+  text-decoration: none;
+  color: highlight-color
+}
+a:focus {
+  border: 1px dashed highlight-color;
+  outline: none;
+}
+.print-window {
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border-top: 1px solid border-color;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  width: desktop-controls-width;
+  padding: 8px;
+  .row a {
+    margin-right: 4px;
+  }
+
+  h3 {
+    margin: 8px 0;
+    text-align: right;
+  }
+}
+
+.message {
+  border-top: 1px solid border-color
+  border-bottom: 1px solid border-color
+  background: #F5F5F5;
+}
+
+.preview-actions {
+  display: flex;
+  padding: 8px 0;
+  margin-left: -8px;
+  margin-bottom: 14px;
+  margin-top: 1px;
+  width: desktop-controls-width;
+  flex-direction: column;
+  align-items: stretch;
+  font-size: 14px;
+  align-items: center;
+  display: flex;
+
+  .popup-help {
+    text-align: center;
+  }
+}
+
+.city-name {
+  position: absolute;
+  right: 32px;
+  bottom: 54px;
+  font-size: 24px;
+  color: #434343;
+  input {
+    font-size: 24px;
+  }
+}
+
+.license {
+  text-align: right;
+  position: fixed;
+  font-family: labels-font;
+  right: 32px;
+  bottom: 32px;
+  font-size: 12px;
+  padding-right: 8px;
+  a {
+    text-decoration: none;
+    display: inline-block;
+  }
+}
+
+.c-2 {
+  flex: 2
+}
+
+@media (max-width: small-screen) {
+  #app {
+    width: 100%;
+    margin: 0;
+
+    .preview-actions,.error,
+    .controls, .print-window {
+      width: 100%;
+    }
+    .loading-container {
+      font-size: 12px;
+    }
+
+    .print-window {
+      font-size: 14px;
+    }
+
+  }
+  .city-name  {
+    right: 8px;
+    bottom: 24px;
+  }
+  .license  {
+    right: 8px;
+    bottom: 8px;
+  }
+}
+
 #custom-controls {
   margin-top: 4px;
   padding: 8px;
