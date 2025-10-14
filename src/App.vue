@@ -4,11 +4,59 @@
     <div v-if="placeFound">
       <div class="controls">
         <a href="#" class="print-button" @click.prevent="toggleSettings"
-          >Customize...</a
+          >Export</a
         >
-        <a href="#" class="try-another" @click.prevent="startOver"
+        <!-- <a href="#" class="try-another" @click.prevent="startOver"
           >Try another city</a
+        > -->
+      </div>
+      <div v-if="showSettings" class="print-window">
+        <div v-if="false" class="row">
+          <a href="#" @click.prevent="zazzleMugPrint()" class="col"
+            >Onto a mug</a
+          >
+          <span class="col c-2">
+            Print what you see onto a mug. <br />Get a unique gift of your
+            favorite city.
+          </span>
+        </div>
+        <div
+          class="preview-actions message"
+          v-if="zazzleLink || generatingPreview"
         >
+          <div v-if="zazzleLink" class="padded popup-help">
+            If your browser has blocked the new window, <br />please
+            <a :href="zazzleLink" target="_blank">click here</a>
+            to open it.
+          </div>
+          <div v-if="generatingPreview" class="loading-container">
+            <loading-icon></loading-icon>
+            Generating preview url...
+          </div>
+        </div>
+        <div class="row">
+          <a href="#" @click.prevent="toPNGFile" class="col"
+            >As an image (.png)</a
+          >
+          <span class="col c-2">
+            Save the current screen as a raster image.
+          </span>
+        </div>
+
+        <div class="row">
+          <a href="#" @click.prevent="toSVGFile" class="col"
+            >As a vector (.svg)</a
+          >
+          <span class="col c-2">
+            Save the current screen as a vector image.
+          </span>
+        </div>
+        <div v-if="true" class="row">
+          <a href="#" @click.prevent="toProtobuf" class="col">To a .PBF file</a>
+          <span class="col c-2">
+            Save the current data as a protobuf message. For developer use only.
+          </span>
+        </div>
       </div>
 
       <div id="custom-controls" class="controls">
@@ -17,26 +65,46 @@
             type="text"
             v-model="cityNameInput"
             placeholder="Stadtname eingeben..."
-            title="Stadtname">
-          <a href="#" class="custom-button" @click.prevent="loadFromCityName">Stadt laden</a>
+            title="Stadtname"
+          />
+          <a href="#" class="custom-button" @click.prevent="loadFromCityName"
+            >Stadt laden</a
+          >
         </div>
         <div class="input-group">
           <input
             type="text"
             v-model="bboxInput"
             placeholder="West, Süd, Ost, Nord"
-            title="Bounding Box im Format: West, Süd, Ost, Nord">
-          <a href="#" class="custom-button" @click.prevent="loadFromBbox">Laden</a>
+            title="Bounding Box im Format: West, Süd, Ost, Nord"
+          />
+          <a href="#" class="custom-button" @click.prevent="loadFromBbox"
+            >Laden</a
+          >
         </div>
-        <a href="#" class="custom-button" @click.prevent="loadRivers">Flüsse laden</a>
-        <a href="#" class="custom-button" @click.prevent="loadBuildings">Gebäude laden</a>
-        <a href="#" class="custom-button" @click.prevent="scene.clear()">Karte leeren</a>
+        <a href="#" class="custom-button" @click.prevent="loadRivers"
+          >Flüsse laden</a
+        >
+        <a href="#" class="custom-button" @click.prevent="loadBuildings"
+          >Gebäude laden</a
+        >
+        <a href="#" class="custom-button" @click.prevent="scene.clear()"
+          >Karte leeren</a
+        >
+        <div class="input-group">
+          <label for="city-name-input">Titel:</label>
+          <input type="text" id="city-name-input" v-model="name" />
+        </div>
       </div>
 
       <div id="layer-list-container" v-if="displayLayers.length > 0">
         <h4>Ebenen</h4>
         <ul>
-          <li v-for="layer in displayLayers" :key="layer.name" class="layer-list-item">
+          <li
+            v-for="layer in displayLayers"
+            :key="layer.name"
+            class="layer-list-item"
+          >
             <div
               class="layer-name"
               @click="selectLayer(layer)"
@@ -47,61 +115,49 @@
             <div v-if="selectedLayerName === layer.name" class="layer-controls">
               <div class="control-row">
                 <label for="x-offset">X-Offset:</label>
-                <input type="number" id="x-offset" v-model.number="xOffsetInput">
+                <input
+                  type="number"
+                  id="x-offset"
+                  v-model.number="xOffsetInput"
+                />
               </div>
               <div class="control-row">
                 <label for="y-offset">Y-Offset:</label>
-                <input type="number" id="y-offset" v-model.number="yOffsetInput">
+                <input
+                  type="number"
+                  id="y-offset"
+                  v-model.number="yOffsetInput"
+                />
               </div>
               <div class="control-buttons">
-                <a href="#" class="control-btn" @click.prevent="moveSelectedLayer">Verschieben</a>
-                <a href="#" class="control-btn reset" @click.prevent="resetSelectedLayerPosition">Zurücksetzen</a>
+                <a
+                  href="#"
+                  class="control-btn"
+                  @click.prevent="moveSelectedLayer"
+                  >Verschieben</a
+                >
+                <a
+                  href="#"
+                  class="control-btn reset"
+                  @click.prevent="resetSelectedLayerPosition"
+                  >Zurücksetzen</a
+                >
+                <a
+                  href="#"
+                  class="control-btn delete"
+                  @click.prevent="deleteSelectedLayer"
+                  >Löschen</a
+                >
               </div>
-              <div class='color-container'>
-                <color-picker v-model='layer.color' @change='layer.changeColor'></color-picker>
+              <div class="color-container">
+                <color-picker
+                  v-model="layer.color"
+                  @change="layer.changeColor"
+                ></color-picker>
               </div>
             </div>
           </li>
         </ul>
-      </div>
-
-      <div v-if='showSettings' class='print-window'>
-        <h3>Export</h3>
-        <div v-if="false" class='row'>
-          <a href='#' @click.prevent='zazzleMugPrint()' class='col'>Onto a mug</a>
-          <span class='col c-2'>
-            Print what you see onto a mug. <br/>Get a unique gift of your favorite city.
-          </span>
-        </div>
-        <div class='preview-actions message' v-if='zazzleLink || generatingPreview'>
-            <div v-if='zazzleLink' class='padded popup-help'>
-              If your browser has blocked the new window, <br/>please <a :href='zazzleLink' target='_blank'>click here</a>
-              to open it.
-            </div>
-            <div v-if='generatingPreview' class='loading-container'>
-              <loading-icon></loading-icon>
-              Generating preview url...
-            </div>
-        </div>
-        <div class='row'>
-          <a href='#'  @click.prevent='toPNGFile' class='col'>As an image (.png)</a>
-          <span class='col c-2'>
-            Save the current screen as a raster image.
-          </span>
-        </div>
-
-        <div class='row'>
-          <a href='#'  @click.prevent='toSVGFile' class='col'>As a vector (.svg)</a>
-          <span class='col c-2'>
-            Save the current screen as a vector image.
-          </span>
-        </div>
-        <div v-if='true' class='row'>
-          <a href='#' @click.prevent='toProtobuf' class='col'>To a .PBF file</a>
-          <span class='col c-2'>
-            Save the current data as a protobuf message. For developer use only.
-          </span>
-        </div>
       </div>
     </div>
   </div>
@@ -172,13 +228,13 @@ export default {
       labelColor: config.getLabelColor().toRgb(),
       backgroundColor: config.getBackgroundColor().toRgb(),
       layers: [],
-      bboxInput: '13.0633,52.3917,13.0716,52.3985',
+      bboxInput: "13.0633,52.3917,13.0716,52.3985",
       currentBboxArray: null,
-      cityNameInput: 'Potsdam',
+      cityNameInput: "Potsdam",
       // for layers
       selectedLayerName: null,
       xOffsetInput: 0,
-      yOffsetInput: 0
+      yOffsetInput: 0,
     };
   },
   computed: {
@@ -222,15 +278,17 @@ export default {
         alert("Bitte geben Sie eine Bounding Box ein.");
         return;
       }
-      const parts = this.bboxInput.split(',').map(item => item.trim());
+      const parts = this.bboxInput.split(",").map((item) => item.trim());
       if (parts.length !== 4) {
-        alert("Ungültiges BBOX-Format. Bitte verwenden Sie vier durch Komma getrennte Werte im Format: West, Süd, Ost, Nord");
+        alert(
+          "Ungültiges BBOX-Format. Bitte verwenden Sie vier durch Komma getrennte Werte im Format: West, Süd, Ost, Nord"
+        );
         return;
       }
       const [west, south, east, north] = parts;
       const bboxArrayForApi = [south, west, north, east];
 
-      console.log(`Lade neue Karte für BBOX: ${bboxArrayForApi.join(', ')}`);
+      console.log(`Lade neue Karte für BBOX: ${bboxArrayForApi.join(", ")}`);
       this.currentBboxArray = bboxArrayForApi;
       if (window.scene) {
         //window.scene.clear();
@@ -241,35 +299,42 @@ export default {
     loadRivers() {
       if (!window.scene) return;
       if (!this.currentBboxArray) {
-        alert("Konnte aktuelle Ansicht nicht bestimmen. Bitte erst eine Karte laden.");
+        alert(
+          "Konnte aktuelle Ansicht nicht bestimmen. Bitte erst eine Karte laden."
+        );
         return;
       }
       console.log("Lade Wasserwege als neue Ebene...");
       let wasserFilter = 'way["waterway"]';
-      let wasserEbene = window.scene.load(wasserFilter, { bbox: this.currentBboxArray });
-      wasserEbene.id = 'Wasser';
-      wasserEbene.color = 'deepskyblue';
+      let wasserEbene = window.scene.load(wasserFilter, {
+        bbox: this.currentBboxArray,
+      });
+      wasserEbene.id = "Wasser";
+      wasserEbene.color = "deepskyblue";
     },
 
     loadBuildings() {
       if (!window.scene) return;
       if (!this.currentBboxArray) {
-        alert("Konnte aktuelle Ansicht nicht bestimmen. Bitte erst eine Karte laden.");
+        alert(
+          "Konnte aktuelle Ansicht nicht bestimmen. Bitte erst eine Karte laden."
+        );
         return;
       }
       console.log("Lade Gebäude als neue Ebene...");
       let gebaeudeFilter = 'way["building"]';
-      let gebaeudeEbene = window.scene.load(gebaeudeFilter, { bbox: this.currentBboxArray });
-      gebaeudeEbene.id = 'Gebäude';
+      let gebaeudeEbene = window.scene.load(gebaeudeFilter, {
+        bbox: this.currentBboxArray,
+      });
+      gebaeudeEbene.id = "Gebäude";
     },
 
     selectLayer(layer) {
-      // Funktion zum Auswählen und Abwählen einer Ebene
       if (this.selectedLayerName === layer.name) {
-        this.selectedLayerName = null; // Auswahl aufheben bei erneutem Klick
+        this.selectedLayerName = null;
       } else {
         this.selectedLayerName = layer.name;
-        this.xOffsetInput = 0; // Eingabefelder bei neuer Auswahl zurücksetzen
+        this.xOffsetInput = 0;
         this.yOffsetInput = 0;
       }
     },
@@ -281,10 +346,10 @@ export default {
         console.error(`Ebene '${this.selectedLayerName}' nicht gefunden.`);
         return;
       }
-      console.log(`Verschiebe Ebene '${this.selectedLayerName}' um X:${this.xOffsetInput}, Y:${this.yOffsetInput}`);
+      console.log(
+        `Verschiebe Ebene '${this.selectedLayerName}' um X:${this.xOffsetInput}, Y:${this.yOffsetInput}`
+      );
       layerToMove.moveBy(this.xOffsetInput, this.yOffsetInput);
-
-      // Eingabefelder nach der Aktion zurücksetzen
       this.xOffsetInput = 0;
       this.yOffsetInput = 0;
     },
@@ -296,10 +361,30 @@ export default {
         console.error(`Ebene '${this.selectedLayerName}' nicht gefunden.`);
         return;
       }
-      console.log(`Setze Position von Ebene '${this.selectedLayerName}' zurück.`);
-      // Jede Ebene speichert ihre Gesamtverschiebung in .dx und .dy.
-      // Wir verschieben sie einfach um den negativen Betrag zurück.
+      console.log(
+        `Setze Position von Ebene '${this.selectedLayerName}' zurück.`
+      );
       layerToReset.moveBy(-layerToReset.dx, -layerToReset.dy);
+    },
+
+    deleteSelectedLayer() {
+      if (!this.selectedLayerName) return;
+
+      const layerToDelete = window.scene.queryLayer(this.selectedLayerName);
+      if (!layerToDelete) {
+        console.error(`Ebene '${this.selectedLayerName}' nicht gefunden.`);
+        return;
+      }
+
+      if (
+        confirm(
+          `Möchten Sie die Ebene '${this.selectedLayerName}' wirklich löschen?`
+        )
+      ) {
+        console.log(`Lösche Ebene '${this.selectedLayerName}'.`);
+        window.scene.remove(layerToDelete);
+        this.selectedLayerName = null;
+      }
     },
 
     dispose() {
@@ -323,7 +408,9 @@ export default {
         appState.unset("areaId");
         appState.set("osm_id", grid.id);
         appState.set("bbox", grid.bboxString);
-        this.currentBboxArray = grid.bboxString.split(',').map(item => item.trim());
+        this.currentBboxArray = grid.bboxString
+          .split(",")
+          .map((item) => item.trim());
       }
       this.placeFound = true;
       this.name = grid.name.split(",")[0];
@@ -368,7 +455,7 @@ export default {
     },
 
     toSVGFile(e) {
-      scene.saveToSVG(this.name)
+      scene.saveToSVG(this.name);
     },
 
     updateLayers() {
@@ -573,6 +660,13 @@ function recordOpenClick(link) {
     border-bottom-left-radius: 0;
     width: auto;
   }
+
+  .input-group label {
+    font-size: 14px;
+    color: #333;
+    margin-right: 8px;
+    white-space: nowrap; // Verhindert Umbruch des Labels
+  }
 }
 
 #layer-list-container {
@@ -672,16 +766,16 @@ function recordOpenClick(link) {
             background: #fbe0e0;
           }
         }
+        &.delete {
+          background: #e74c3c;
+          border-color: #c0392b;
+          color: white;
+          &:hover {
+            background: #c0392b;
+          }
+        }
       }
     }
   }
 }
-
-.col {
-    display: flex;
-    flex: 1;
-    select {
-      margin-left: 14px;
-    }
-  }
 </style>
