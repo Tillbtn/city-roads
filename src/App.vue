@@ -57,14 +57,52 @@
                 <a href="#" class="control-btn" @click.prevent="moveSelectedLayer">Verschieben</a>
                 <a href="#" class="control-btn reset" @click.prevent="resetSelectedLayerPosition">Zurücksetzen</a>
               </div>
+              <div class='color-container'>
+                <color-picker v-model='layer.color' @change='layer.changeColor'></color-picker>
+              </div>
             </div>
           </li>
         </ul>
       </div>
 
-      <div v-if="showSettings" class="print-window">
-        <h3>Display</h3>
+      <div v-if='showSettings' class='print-window'>
+        <h3>Export</h3>
+        <div v-if="false" class='row'>
+          <a href='#' @click.prevent='zazzleMugPrint()' class='col'>Onto a mug</a>
+          <span class='col c-2'>
+            Print what you see onto a mug. <br/>Get a unique gift of your favorite city.
+          </span>
         </div>
+        <div class='preview-actions message' v-if='zazzleLink || generatingPreview'>
+            <div v-if='zazzleLink' class='padded popup-help'>
+              If your browser has blocked the new window, <br/>please <a :href='zazzleLink' target='_blank'>click here</a>
+              to open it.
+            </div>
+            <div v-if='generatingPreview' class='loading-container'>
+              <loading-icon></loading-icon>
+              Generating preview url...
+            </div>
+        </div>
+        <div class='row'>
+          <a href='#'  @click.prevent='toPNGFile' class='col'>As an image (.png)</a>
+          <span class='col c-2'>
+            Save the current screen as a raster image.
+          </span>
+        </div>
+
+        <div class='row'>
+          <a href='#'  @click.prevent='toSVGFile' class='col'>As a vector (.svg)</a>
+          <span class='col c-2'>
+            Save the current screen as a vector image.
+          </span>
+        </div>
+        <div v-if='true' class='row'>
+          <a href='#' @click.prevent='toProtobuf' class='col'>To a .PBF file</a>
+          <span class='col c-2'>
+            Save the current data as a protobuf message. For developer use only.
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 
