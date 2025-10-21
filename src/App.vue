@@ -3,27 +3,20 @@
   <div id="app">
     <div v-if="placeFound">
       <div class="controls">
-        <a href="#" class="print-button" @click.prevent="toggleSettings"
-          >Export</a
-        >
+        <a href="#" class="print-button" @click.prevent="toggleSettings">Export</a>
         <!-- <a href="#" class="try-another" @click.prevent="startOver"
           >Try another city</a
         > -->
       </div>
       <div v-if="showSettings" class="print-window">
         <div v-if="false" class="row">
-          <a href="#" @click.prevent="zazzleMugPrint()" class="col"
-            >Onto a mug</a
-          >
+          <a href="#" @click.prevent="zazzleMugPrint()" class="col">Onto a mug</a>
           <span class="col c-2">
             Print what you see onto a mug. <br />Get a unique gift of your
             favorite city.
           </span>
         </div>
-        <div
-          class="preview-actions message"
-          v-if="zazzleLink || generatingPreview"
-        >
+        <div class="preview-actions message" v-if="zazzleLink || generatingPreview">
           <div v-if="zazzleLink" class="padded popup-help">
             If your browser has blocked the new window, <br />please
             <a :href="zazzleLink" target="_blank">click here</a>
@@ -35,18 +28,14 @@
           </div>
         </div>
         <div class="row">
-          <a href="#" @click.prevent="toPNGFile" class="col"
-            >As an image (.png)</a
-          >
+          <a href="#" @click.prevent="toPNGFile" class="col">As an image (.png)</a>
           <span class="col c-2">
             Save the current screen as a raster image.
           </span>
         </div>
 
         <div class="row">
-          <a href="#" @click.prevent="toSVGFile" class="col"
-            >As a vector (.svg)</a
-          >
+          <a href="#" @click.prevent="toSVGFile" class="col">As a vector (.svg)</a>
           <span class="col c-2">
             Save the current screen as a vector image.
           </span>
@@ -61,36 +50,17 @@
 
       <div id="custom-controls" class="controls">
         <div class="input-group">
-          <input
-            type="text"
-            v-model="cityNameInput"
-            placeholder="Stadtname eingeben..."
-            title="Stadtname"
-          />
-          <a href="#" class="custom-button" @click.prevent="loadFromCityName"
-            >Stadt laden</a
-          >
+          <input type="text" v-model="cityNameInput" placeholder="Stadtname eingeben..." title="Stadtname" />
+          <a href="#" class="custom-button" @click.prevent="loadFromCityName">Stadt laden</a>
         </div>
         <div class="input-group">
-          <input
-            type="text"
-            v-model="bboxInput"
-            placeholder="West, Süd, Ost, Nord"
-            title="Bounding Box im Format: West, Süd, Ost, Nord"
-          />
-          <a href="#" class="custom-button" @click.prevent="loadFromBbox"
-            >Laden</a
-          >
+          <input type="text" v-model="bboxInput" placeholder="West, Süd, Ost, Nord"
+            title="Bounding Box im Format: West, Süd, Ost, Nord" />
+          <a href="#" class="custom-button" @click.prevent="loadFromBbox">Laden</a>
         </div>
-        <a href="#" class="custom-button" @click.prevent="loadRivers"
-          >Flüsse laden</a
-        >
-        <a href="#" class="custom-button" @click.prevent="loadBuildings"
-          >Gebäude laden</a
-        >
-        <a href="#" class="custom-button" @click.prevent="scene.clear()"
-          >Karte leeren</a
-        >
+        <a href="#" class="custom-button" @click.prevent="loadRivers">Flüsse laden</a>
+        <a href="#" class="custom-button" @click.prevent="loadBuildings">Gebäude laden</a>
+        <a href="#" class="custom-button" @click.prevent="scene.clear()">Karte leeren</a>
         <div class="input-group">
           <label for="city-name-input">Titel:</label>
           <input type="text" id="city-name-input" v-model="name" />
@@ -100,60 +70,26 @@
       <div id="layer-list-container" v-if="displayLayers.length > 0">
         <h4>Ebenen</h4>
         <ul>
-          <li
-            v-for="layer in displayLayers"
-            :key="layer.name"
-            class="layer-list-item"
-          >
-            <div
-              class="layer-name"
-              @click="selectLayer(layer)"
-              :class="{ selected: selectedLayerName === layer.name }"
-            >
+          <li v-for="layer in displayLayers" :key="layer.name" class="layer-list-item">
+            <div class="layer-name" @click="selectLayer(layer)" :class="{ selected: selectedLayerName === layer.name }">
               {{ layer.name }}
             </div>
             <div v-if="selectedLayerName === layer.name" class="layer-controls">
-              <div class="control-row">
+              <div class="control-row" v-if="layer.sceneLayer">
                 <label for="x-offset">X-Offset:</label>
-                <input
-                  type="number"
-                  id="x-offset"
-                  v-model.number="xOffsetInput"
-                />
+                <input type="number" id="x-offset" v-model.number="xOffsetInput" />
               </div>
-              <div class="control-row">
+              <div class="control-row" v-if="layer.sceneLayer">
                 <label for="y-offset">Y-Offset:</label>
-                <input
-                  type="number"
-                  id="y-offset"
-                  v-model.number="yOffsetInput"
-                />
+                <input type="number" id="y-offset" v-model.number="yOffsetInput" />
               </div>
-              <div class="control-buttons">
-                <a
-                  href="#"
-                  class="control-btn"
-                  @click.prevent="moveSelectedLayer"
-                  >Verschieben</a
-                >
-                <a
-                  href="#"
-                  class="control-btn reset"
-                  @click.prevent="resetSelectedLayerPosition"
-                  >Zurücksetzen</a
-                >
-                <a
-                  href="#"
-                  class="control-btn delete"
-                  @click.prevent="deleteSelectedLayer"
-                  >Löschen</a
-                >
+              <div class="control-buttons" v-if="layer.sceneLayer">
+                <a href="#" class="control-btn" @click.prevent="moveSelectedLayer">Verschieben</a>
+                <a href="#" class="control-btn reset" @click.prevent="resetSelectedLayerPosition">Zurücksetzen</a>
+                <a href="#" class="control-btn delete" @click.prevent="deleteSelectedLayer">Löschen</a>
               </div>
               <div class="color-container">
-                <color-picker
-                  v-model="layer.color"
-                  @change="layer.changeColor"
-                ></color-picker>
+                <color-picker v-model="layer.color" @change="layer.changeColor"></color-picker>
               </div>
             </div>
           </li>
@@ -162,26 +98,12 @@
     </div>
   </div>
 
-  <editable-label
-    v-if="placeFound"
-    v-model="name"
-    class="city-name"
-    :printable="true"
-    :style="{ color: labelColorRGBA }"
-    :overlay-manager="overlayManager"
-  ></editable-label>
-  <div
-    v-if="placeFound"
-    class="license printable can-drag"
-    :style="{ color: labelColorRGBA }"
-  >
+  <editable-label v-if="placeFound" v-model="name" class="city-name" :printable="true"
+    :style="{ color: labelColorRGBA }" :overlay-manager="overlayManager"></editable-label>
+  <div v-if="placeFound" class="license printable can-drag" :style="{ color: labelColorRGBA }">
     data
-    <a
-      href="https://www.openstreetmap.org/about/"
-      target="_blank"
-      :style="{ color: labelColorRGBA }"
-      >© OpenStreetMap</a
-    >
+    <a href="https://www.openstreetmap.org/about/" target="_blank" :style="{ color: labelColorRGBA }">©
+      OpenStreetMap</a>
   </div>
 </template>
 
@@ -202,10 +124,11 @@ import createOverlayManager from "./createOverlayManager.js";
 import tinycolor from "tinycolor2";
 
 class ColorLayer {
-  constructor(name, color, callback) {
+  constructor(name, color, callback, sceneLayer = null) { // <-- 4. Argument hinzufügen
     this.name = name;
     this.changeColor = callback;
     this.color = color;
+    this.sceneLayer = sceneLayer; // <-- Referenz speichern
   }
 }
 
@@ -307,7 +230,8 @@ export default {
       console.log("Lade Wasserwege als neue Ebene...");
       let wasserFilter = 'way["waterway"]';
       let wasserEbene = window.scene.load(wasserFilter, {
-        bbox: this.currentBboxArray,
+        layer: window.scene.queryLayer(), // <-- Diese Zeile hinzufügen
+        bbox: this.currentBboxArray
       });
       wasserEbene.id = "Wasser";
       wasserEbene.color = "deepskyblue";
@@ -324,7 +248,8 @@ export default {
       console.log("Lade Gebäude als neue Ebene...");
       let gebaeudeFilter = 'way["building"]';
       let gebaeudeEbene = window.scene.load(gebaeudeFilter, {
-        bbox: this.currentBboxArray,
+        layer: window.scene.queryLayer(), // <-- Diese Zeile hinzufügen
+        bbox: this.currentBboxArray
       });
       gebaeudeEbene.id = "Gebäude";
     },
@@ -341,11 +266,14 @@ export default {
 
     moveSelectedLayer() {
       if (!this.selectedLayerName) return;
-      const layerToMove = window.scene.queryLayer(this.selectedLayerName);
-      if (!layerToMove) {
-        console.error(`Ebene '${this.selectedLayerName}' nicht gefunden.`);
+      // Finde das Layer-Objekt in Vue's Daten
+      const layerWrapper = this.layers.find(l => l.name === this.selectedLayerName);
+      if (!layerWrapper || !layerWrapper.sceneLayer) {
+        console.error(`Ebene '${this.selectedLayerName}' nicht gefunden oder es ist keine echte Ebene.`);
         return;
       }
+      const layerToMove = layerWrapper.sceneLayer; // <-- Direkte Referenz
+
       console.log(
         `Verschiebe Ebene '${this.selectedLayerName}' um X:${this.xOffsetInput}, Y:${this.yOffsetInput}`
       );
@@ -356,11 +284,14 @@ export default {
 
     resetSelectedLayerPosition() {
       if (!this.selectedLayerName) return;
-      const layerToReset = window.scene.queryLayer(this.selectedLayerName);
-      if (!layerToReset) {
-        console.error(`Ebene '${this.selectedLayerName}' nicht gefunden.`);
+      // Finde das Layer-Objekt in Vue's Daten
+      const layerWrapper = this.layers.find(l => l.name === this.selectedLayerName);
+      if (!layerWrapper || !layerWrapper.sceneLayer) {
+        console.error(`Ebene '${this.selectedLayerName}' nicht gefunden oder es ist keine echte Ebene.`);
         return;
       }
+      const layerToReset = layerWrapper.sceneLayer; // <-- Direkte Referenz
+
       console.log(
         `Setze Position von Ebene '${this.selectedLayerName}' zurück.`
       );
@@ -368,21 +299,45 @@ export default {
     },
 
     deleteSelectedLayer() {
+      // 1. Überprüfen, ob ein Name ausgewählt ist
       if (!this.selectedLayerName) return;
 
-      const layerToDelete = window.scene.queryLayer(this.selectedLayerName);
-      if (!layerToDelete) {
-        console.error(`Ebene '${this.selectedLayerName}' nicht gefunden.`);
-        return;
-      }
-
+      // 2. Bestätigungsdialog
       if (
         confirm(
           `Möchten Sie die Ebene '${this.selectedLayerName}' wirklich löschen?`
         )
       ) {
         console.log(`Lösche Ebene '${this.selectedLayerName}'.`);
-        window.scene.remove(layerToDelete);
+
+        const renderer = window.scene.getRenderer();
+        const root = renderer.getRoot();
+
+        // --- KORREKTUR V3 ---
+        // Finde den Index, indem wir die 'id' des Kind-Elements
+        // mit dem gespeicherten Namen vergleichen.
+        // (Wir haben in updateLayers sichergestellt, dass layer.id == name ist)
+        const index = root.children.findIndex(
+          (child) => child.id === this.selectedLayerName
+        );
+        // --- ENDE KORREKTUR V3 ---
+
+        if (index > -1) {
+          // Entferne das Layer aus dem Array
+          root.children.splice(index, 1);
+        } else {
+          // Diese Meldung sollte jetzt nicht mehr erscheinen
+          console.error(
+            `Konnte Layer mit ID '${this.selectedLayerName}' nicht im root.children-Array finden.`
+          );
+        }
+
+        // Erzwinge ein Neuzeichnen der Szene
+        renderer.renderFrame();
+
+        // Aktualisiere die Vue-GUI-Liste
+        this.updateLayers();
+
         this.selectedLayerName = null;
       }
     },
@@ -470,15 +425,21 @@ export default {
         if (!name) {
           lastLayer += 1;
           name = "lines " + lastLayer;
+          layer.id = name; // <-- WICHTIG: ID am Objekt setzen
         }
         let layerColor = tinycolor.fromRatio(layer.color);
         newLayers.push(
-          new ColorLayer(name, layerColor, (newColor) => {
-            this.zazzleLink = null;
-            layer.color = toRatioColor(newColor);
-            renderer.renderFrame();
-            this.scene.fire("color-change", layer);
-          })
+          new ColorLayer(
+            name,
+            layerColor,
+            (newColor) => {
+              this.zazzleLink = null;
+              layer.color = toRatioColor(newColor);
+              renderer.renderFrame();
+              this.scene.fire("color-change", layer);
+            },
+            layer // <-- Referenz hier übergeben
+          )
         );
       });
 
