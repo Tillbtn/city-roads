@@ -60,6 +60,12 @@
         </div>
         <a href="#" class="custom-button" @click.prevent="loadRivers">Flüsse laden</a>
         <a href="#" class="custom-button" @click.prevent="loadBuildings">Gebäude laden</a>
+        <div class="input-group">
+          <input type="text" v-model="customQueryKey" placeholder="Schlüssel (z.B. highway)" title="Overpass API Key" />
+          <input type="text" v-model="customQueryValue" placeholder="Wert (z.B. path)" title="Overpass API Value"
+            style="border-left: 0" />
+        </div>
+        <a href="#" class="custom-button" @click.prevent="loadCustomQuery">Key/Value laden</a>
         <a href="#" class="custom-button" @click.prevent="scene.clear()">Karte leeren</a>
         <div class="input-group">
           <label for="city-name-input">Titel:</label>
@@ -158,6 +164,8 @@ export default {
       selectedLayerName: null,
       xOffsetInput: 0,
       yOffsetInput: 0,
+      customQueryKey: "highway", // Key (z.B. highway)
+      customQueryValue: "path", // Value (z.B. path)
     };
   },
   computed: {
@@ -254,6 +262,41 @@ export default {
       gebaeudeEbene.id = "Gebäude";
     },
 
+    loadCustomQuery() {
+      if (!window.scene) return;
+
+      // Prüfen, ob eine BBOX (Start-Layer) vorhanden ist
+      if (!this.currentBboxArray) {
+        alert(
+          "Konnte aktuelle Ansicht nicht bestimmen. Bitte erst eine Karte laden."
+        );
+        return;
+      }
+
+      // Prüfen, ob Key und Value ausgefüllt sind
+      const key = this.customQueryKey.trim();
+      const value = this.customQueryValue.trim();
+
+      if (!key || !value) {
+        alert("Bitte geben Sie sowohl einen Schlüssel als auch einen Wert ein.");
+        return;
+      }
+
+      // Overpass-Filter und Layer-Namen erstellen
+      const overpassFilter = `way[${key}="${value}"]`;
+      const layerName = `${key}=${value}`;
+      console.log('Lade benutzerdefinierte Ebene: ${layerName}');
+
+      // Szene laden (mit korrekter Ausrichtung)
+      let newLayer = window.scene.load(overpassFilter, {
+        layer: window.scene.queryLayer(), // WICHTIG: Für korrekte Positionierung
+        bbox: this.currentBboxArray,
+      });
+
+      // Dem Layer einen Namen/ID geben, damit es in der Liste erscheint
+      newLayer.id = layerName;
+    },
+
     selectLayer(layer) {
       if (this.selectedLayerName === layer.name) {
         this.selectedLayerName = null;
@@ -275,7 +318,7 @@ export default {
       const layerToMove = layerWrapper.sceneLayer; // <-- Direkte Referenz
 
       console.log(
-        `Verschiebe Ebene '${this.selectedLayerName}' um X:${this.xOffsetInput}, Y:${this.yOffsetInput}`
+        `Verschiebe Ebene '${this.selectedLayerName}' um X:${this.xOffsetInput}, Y:${this.yOffsetInput} `
       );
       layerToMove.moveBy(this.xOffsetInput, this.yOffsetInput);
       this.xOffsetInput = 0;
@@ -305,7 +348,7 @@ export default {
       // 2. Bestätigungsdialog
       if (
         confirm(
-          `Möchten Sie die Ebene '${this.selectedLayerName}' wirklich löschen?`
+          `Möchten Sie die Ebene '${this.selectedLayerName}' wirklich löschen ? `
         )
       ) {
         console.log(`Lösche Ebene '${this.selectedLayerName}'.`);
@@ -328,7 +371,7 @@ export default {
         } else {
           // Diese Meldung sollte jetzt nicht mehr erscheinen
           console.error(
-            `Konnte Layer mit ID '${this.selectedLayerName}' nicht im root.children-Array finden.`
+            `Konnte Layer mit ID '${this.selectedLayerName}' nicht im root.children - Array finden.`
           );
         }
 
@@ -758,6 +801,10 @@ a:focus {
   .input-group a.custom-button {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: auto;
+    white-space: nowrap;
     width: auto;
   }
 
